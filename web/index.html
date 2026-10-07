@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0d0f12">
+<meta name="description" content="Play Half-Life and Counter-Strike in your browser with the open-source Xash3D FWGS engine, using your own game files.">
+<title>Xash3D FWGS Web</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%23ff8c1a' stroke-width='3'/%3E%3Cpath d='M16 1v8M16 23v8M1 16h8M23 16h8' stroke='%23ff8c1a' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<script src="vendor/fflate.umd.js" defer></script>
+<script type="module" src="launcher.js"></script>
+</head>
+<body>
+<div id="landing" class="landing">
+	<header class="hero">
+		<svg class="hero-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11"/><path d="M16 1v8M16 23v8M1 16h8M23 16h8"/></svg>
+		<div>
+			<h1>Xash3D FWGS <span class="hero-tag">Web</span></h1>
+			<p class="hero-sub">Half-Life and Counter-Strike 1.6 in your browser, powered by an open-source GoldSrc-compatible engine.</p>
+		</div>
+	</header>
+
+	<main class="layout">
+		<section class="card intro" aria-labelledby="intro-title">
+			<h2 id="intro-title">Bring your own game files</h2>
+			<p>No game content is included here. You need a legally owned copy of <strong>Half-Life</strong> (and <strong>Counter-Strike</strong> for CS&nbsp;1.6), for example from Steam.</p>
+			<ol class="steps">
+				<li>In Steam, right-click <em>Half-Life</em> &rarr; <em>Manage</em> &rarr; <em>Browse local files</em>.</li>
+				<li>Put the <code>valve</code> folder (plus <code>cstrike</code> for Counter-Strike) into one <code>.zip</code>.</li>
+				<li>Drop the zip below and press <em>Play</em>.</li>
+			</ol>
+			<p class="muted small">Your files stay on this device: they are read locally and never uploaded.</p>
+			<div id="compat" class="notice warn" hidden role="status"></div>
+		</section>
+
+		<section class="card source" aria-labelledby="source-title">
+			<h2 id="source-title">Game data</h2>
+
+			<div id="saved" class="saved" hidden>
+				<div class="saved-info">
+					<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></svg>
+					<div><div class="saved-title">Saved on this device</div><div id="saved-meta" class="muted small"></div></div>
+				</div>
+				<div class="row">
+					<button id="use-saved" class="btn primary" type="button">Use saved data</button>
+					<button id="forget-saved" class="btn ghost" type="button">Forget saved data</button>
+				</div>
+			</div>
+
+			<div id="drop" class="dropzone" tabindex="0" role="button" aria-describedby="drop-hint">
+				<svg class="drop-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/></svg>
+				<div class="drop-title">Drop your game <strong>.zip</strong> here</div>
+				<div id="drop-hint" class="muted small">or choose it from your computer</div>
+				<div class="row center">
+					<label class="btn primary file-btn">Choose .zip<input id="pick-zip" type="file" accept=".zip,application/zip,application/x-zip-compressed"></label>
+					<label class="btn ghost file-btn">Choose folder<input id="pick-dir" type="file" webkitdirectory directory multiple></label>
+				</div>
+			</div>
+
+			<label class="check"><input id="remember" type="checkbox"> <span>Remember this zip on this device <span class="muted">(stored in your browser for next time)</span></span></label>
+
+			<div id="source-info" class="source-info" hidden>
+				<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h10l6 6v10H4z"/><path d="M14 4v6h6"/></svg>
+				<div class="grow"><div id="source-name" class="source-name"></div><div id="source-meta" class="muted small"></div></div>
+				<span id="save-state" class="chip" hidden></span>
+			</div>
+		</section>
+
+		<section id="games" class="card games" aria-labelledby="games-title" hidden>
+			<h2 id="games-title">Games</h2>
+			<div id="game-list" class="game-list" role="list"></div>
+			<p id="games-note" class="muted small" hidden></p>
+		</section>
+
+		<details id="advanced" class="card advanced">
+			<summary><h2>Advanced</h2></summary>
+			<div class="form">
+				<label class="field" id="renderer-field" hidden>
+					<span>Renderer</span>
+					<select id="renderer"></select>
+				</label>
+				<label class="check"><input id="devmode" type="checkbox"> <span>Developer console <span class="muted">(<code>-dev 1 -console</code>, toggle with <kbd>~</kbd>)</span></span></label>
+				<label class="field">
+					<span>Extra command-line arguments</span>
+					<input id="args" type="text" spellcheck="false" autocomplete="off" placeholder="e.g. +map c1a0 -width 1280">
+				</label>
+				<div class="row">
+					<button id="reset-saves" class="btn ghost danger" type="button">Delete saved games &amp; settings&hellip;</button>
+				</div>
+				<p id="build-info" class="muted small"></p>
+			</div>
+		</details>
+	</main>
+
+	<footer class="footer muted small">
+		<p><a href="https://github.com/FWGS/xash3d-fwgs" rel="noopener">Xash3D FWGS</a> is free software (GPLv3). Half-Life and Counter-Strike are trademarks of Valve Corporation; this project is not affiliated with or endorsed by Valve.</p>
+	</footer>
+</div>
+
+<div id="stage" class="stage" hidden>
+	<canvas id="canvas" tabindex="0" aria-label="Game"></canvas>
+	<div id="hud" class="hud">
+		<span id="save-dot" class="save-dot" title="Saving&hellip;" hidden></span>
+		<button id="btn-log" class="hud-btn" type="button" aria-label="Show log" title="Log"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
+		<button id="btn-fullscreen" class="hud-btn" type="button" aria-label="Fullscreen" title="Fullscreen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button>
+	</div>
+	<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</div>
+
+<section id="progress" class="overlay" hidden aria-live="polite" aria-labelledby="progress-title">
+	<div class="panel">
+		<h2 id="progress-title">Starting&hellip;</h2>
+		<ol id="stages" class="stages"></ol>
+		<div class="bar" role="progressbar" aria-labelledby="progress-title" aria-valuemin="0" aria-valuemax="100"><div id="bar-fill" class="bar-fill"></div></div>
+		<div id="progress-detail" class="muted small progress-detail">&nbsp;</div>
+	</div>
+</section>
+
+<section id="error" class="overlay" hidden role="alertdialog" aria-labelledby="error-title" aria-describedby="error-message">
+	<div class="panel error-panel">
+		<h2 id="error-title">Something went wrong</h2>
+		<p id="error-message"></p>
+		<details id="error-details-box" hidden><summary>Details</summary><pre id="error-details"></pre></details>
+		<div class="row end">
+			<button id="error-log" class="btn ghost" type="button">Show log</button>
+			<button id="error-back" class="btn ghost" type="button">Back</button>
+			<button id="error-reload" class="btn primary" type="button">Reload</button>
+		</div>
+	</div>
+</section>
+
+<aside id="log" class="log" hidden aria-label="Engine log">
+	<div class="log-head">
+		<strong>Log</strong> <span id="log-count" class="muted small"></span>
+		<span class="grow"></span>
+		<button id="log-copy" class="btn tiny ghost" type="button">Copy</button>
+		<button id="log-save" class="btn tiny ghost" type="button">Download</button>
+		<button id="log-close" class="btn tiny ghost" type="button" aria-label="Close log">&times;</button>
+	</div>
+	<pre id="log-body" class="log-body" tabindex="0"></pre>
+</aside>
+<button id="log-toggle" class="log-toggle" type="button" aria-controls="log">Log <span id="log-badge" class="badge" hidden></span></button>
+
+<div id="dropveil" class="dropveil" hidden><div>Drop to load</div></div>
+<noscript><p class="card" style="margin:2rem">This launcher needs JavaScript and WebAssembly.</p></noscript>
+</body>
+</html>
