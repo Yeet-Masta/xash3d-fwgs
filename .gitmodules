@@ -1,6 +1,7 @@
 [submodule "mainui"]
 	path = 3rdparty/mainui
 	url = https://github.com/Yeet-Masta/mainui_cpp.git
+	branch = emscripten-port
 [submodule "ref_gl/nanogl"]
 	path = 3rdparty/nanogl
 	url = https://github.com/FWGS/nanogl
@@ -40,6 +41,7 @@
 [submodule "3rdparty/library_suffix"]
 	path = 3rdparty/library_suffix
 	url = https://github.com/Yeet-Masta/library-suffix.git
+	branch = emscripten-port
 [submodule "3rdparty/mbedtls/mbedtls"]
 	path = 3rdparty/mbedtls/mbedtls
 	url = https://github.com/FWGS/mbedtls-releases.git
