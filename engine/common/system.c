@@ -42,6 +42,10 @@ GNU General Public License for more details.
 #include <process.h>
 #endif
 
+#if XASH_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
 #if XASH_NSWITCH
 #include <switch.h>
 #endif
@@ -409,6 +413,11 @@ void Sys_Error( const char *error, ... )
 
 	if( !Host_IsDedicated() )
 	{
+#if XASH_EMSCRIPTEN
+		// the web page shows it in its own error overlay, alert() would block the tab
+		Sys_Print( text );
+		EM_ASM({ Module.xash?.onError?.( UTF8ToString( $0 )); }, text );
+#else
 #if XASH_SDL >= 2
 		if( host.hWnd ) SDL_HideWindow( host.hWnd );
 #endif
@@ -417,6 +426,7 @@ void Sys_Error( const char *error, ... )
 #endif
 		Sys_Print( text );
 		Platform_MessageBox( "Xash Error", text, true );
+#endif // XASH_EMSCRIPTEN
 	}
 	else
 	{

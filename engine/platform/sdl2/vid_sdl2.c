@@ -675,6 +675,11 @@ static rserr_t VID_CreateWindow( const int input_width, const int input_height, 
 	if( vid_maximized.value )
 		SetBits( flags, SDL_WINDOW_MAXIMIZED );
 
+#if XASH_EMSCRIPTEN
+	// an alpha channel in the WebGL backbuffer makes the browser blend the canvas with the page
+	SDL_GL_SetAttribute( SDL_GL_ALPHA_SIZE, 0 );
+#endif
+
 	// by default we create window in windowed mode because we don't know
 	// if window creation failed because of invalid video mode or any other reason
 	host.hWnd = SDL_CreateWindow( GI->title, rect.x, rect.y, rect.w, rect.h, flags );

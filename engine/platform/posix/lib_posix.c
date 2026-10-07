@@ -358,13 +358,26 @@ void *COM_FunctionFromName( void *hInstance, const char *pName )
 	return COM_GetProcAddress( hInstance, pName );
 }
 
+#if XASH_EMSCRIPTEN
+// implemented in engine/platform/emscripten/lib_emscripten.js
+int Emscripten_NameForFunction( void *hInstance, void *function, char *out, size_t size );
+#endif
+
 const char *COM_NameForFunction( void *hInstance, void *function )
 {
+#if XASH_EMSCRIPTEN
+	// dladdr() is a stub on Emscripten, ask the dynamic linker for the export name instead
+	static string name;
+
+	if( Emscripten_NameForFunction( hInstance, function, name, sizeof( name )))
+		return COM_GetPlatformNeutralName( name );
+#else
 	// NOTE: dladdr() is a glibc extension
 	Dl_info info = {0};
 	int ret = dladdr( (void*)function, &info );
 	if( ret && info.dli_sname )
 		return COM_GetPlatformNeutralName( info.dli_sname );
+#endif
 
 #ifdef XASH_ALLOW_SAVERESTORE_OFFSETS
 	return COM_OffsetNameForFunction( function );

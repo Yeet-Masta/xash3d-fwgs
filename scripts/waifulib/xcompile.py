@@ -652,7 +652,7 @@ def options(opt):
 		help='enable building for iOS Simulator [default: %(default)s]')
 
 def configure(conf):
-	if 'CROSS_COMPILE' in conf.environ:
+	if 'CROSS_COMPILE' in conf.environ and not conf.options.EMSCRIPTEN:
 		toolchain_path = conf.environ['CROSS_COMPILE']
 		conf.environ['CC'] = toolchain_path + 'cc'
 		conf.environ['CXX'] = toolchain_path + 'c++'
@@ -806,6 +806,15 @@ def configure(conf):
 		conf.env.CXXFLAGS += ios.cflags()
 		conf.env.LINKFLAGS += ios.linkflags()
 		conf.env.IOS = 1
+	elif conf.options.EMSCRIPTEN:
+		# Emscripten compiler is just a wrapper around clang, waf's clang tools detect it fine,
+		# platform modifiers (DEST_CPU, -fPIC, SIDE_MODULE, patterns) live in c_emscripten.py
+		conf.environ['CC'] = 'emcc'
+		conf.environ['CXX'] = 'em++'
+		conf.environ['AR'] = 'emar'
+		conf.environ['STRIP'] = 'emstrip'
+		conf.environ['OBJCOPY'] = 'llvm-objcopy'
+		conf.load('c_emscripten')
 
 	conf.env.MAGX = conf.options.MAGX
 	conf.env.MSVC_WINE = conf.options.MSVC_WINE

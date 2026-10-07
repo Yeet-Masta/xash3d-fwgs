@@ -357,6 +357,9 @@ Taskfile.yml
 .idea/
 cmake-build-*
 
+# Emscripten web build (scripts/emscripten/assemble.py)
+/build-web/
+
 # some Android-specific build stuff
 3rdparty/SDL
 3rdparty/hlsdk-portable

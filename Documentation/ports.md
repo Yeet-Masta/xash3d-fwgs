@@ -33,6 +33,6 @@ Table is sorted by status and platform.
 | Dreamcast       | In progress                | @maximqaxd               | [GitHub Repository](https://github.com/maximqaxd/xash3d-fwgs_dc/)
 | PSP             | In progress                | @Crow_bar, @Velaron      | [GitHub Repository](https://github.com/Crow-bar/xash3d-fwgs)
 | Wii             | In progress                | Collaborative effort     | [GitHub Repository](https://github.com/saucesaft/xash3d-wii)
-| Emscripten      | Old Engine                 | N/A                      | 
+| Emscripten      | In progress                | N/A                      | Half-Life and Counter-Strike in the browser, see [emscripten.md](emscripten.md)
 | 3DS             | Old Engine fork            | N/A                      | [GitHub Repository](https://github.com/masterfeizz/Xash3DS)
 | Oculus Quest    | Old Engine fork            | N/A                      | [GitHub Repository](https://github.com/DrBeef/Lambda1VR)

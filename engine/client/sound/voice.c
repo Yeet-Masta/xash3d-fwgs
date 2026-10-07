@@ -878,6 +878,11 @@ void Voice_RecordStart( void )
 		}
 	}
 
+#if XASH_EMSCRIPTEN
+	if( !Voice_IsRecording( ) && !voice.device_opened )
+		voice.device_opened = VoiceCapture_Init();
+#endif
+
 	if( !Voice_IsRecording( ) && voice.device_opened )
 		voice.is_recording = VoiceCapture_Activate( true );
 
@@ -1174,10 +1179,16 @@ qboolean Voice_Init( const char *pszCodecName, int quality, qboolean preinit )
 		return false;
 	}
 
+#if XASH_EMSCRIPTEN
+	// browsers ask the user for microphone access when it's opened, so it's done
+	// on demand in Voice_RecordStart
+	voice.device_opened = false;
+#else
 	voice.device_opened = VoiceCapture_Init();
 
 	if( !voice.device_opened )
 		Con_Printf( S_WARN "No microphone is available.\n" );
+#endif
 
 	voice.initialized = true;
 	return true;

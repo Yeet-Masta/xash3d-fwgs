@@ -305,5 +305,8 @@ def get_optimization_flags(conf):
 	# on all compilers (except MSVC?) we need to copy CFLAGS to LINKFLAGS
 	if conf.options.LTO and conf.env.COMPILER_CC != 'msvc':
 		linkflags += cflags
+	elif conf.env.DEST_OS == 'emscripten':
+		# emcc runs binaryen's wasm-opt at link time only if optimization level is passed to the linker
+		linkflags += [f for f in cflags if f.startswith('-O')]
 
 	return cflags, linkflags

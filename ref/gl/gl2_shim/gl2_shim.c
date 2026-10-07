@@ -591,6 +591,14 @@ int GL2_ShimInit( void )
 		gEngfuncs.Con_Printf( S_NOTE "GL2_ShimInit: missing MapBufferRange, disabling incremental rendering\n" );
 	}
 
+#if XASH_WEBGL
+	// WebGL2 has neither buffer storage nor buffer mapping, emulating them in JavaScript
+	// is way slower than plain glBufferData/glBufferSubData uploads
+	gl2wrap_config.buf_storage = false;
+	gl2wrap_config.incremental = false;
+	gl2wrap_config.supports_mapbuffer = false;
+#endif
+
 	if( gEngfuncs.Sys_CheckParm( "-nocoherent" ))
 		gl2wrap_config.coherent = false;
 	if( gEngfuncs.Sys_CheckParm( "-nobufstor" ))
@@ -605,6 +613,9 @@ int GL2_ShimInit( void )
 		gl2wrap_config.incremental = gl2wrap_config.buf_storage = false;
 
 	gl2wrap_config.version = 310;
+#if XASH_WEBGL
+	gl2wrap_config.version = 300; // WebGL2 only understands GLSL ES 3.00, don't waste time on failed compiles
+#endif
 	if( gEngfuncs.Sys_CheckParm( "-minshaders" ))
 		gl2wrap_config.version = 100;
 	if( gl2wrap_config.buf_storage )

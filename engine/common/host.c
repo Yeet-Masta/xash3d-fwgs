@@ -56,7 +56,15 @@ non-zero value will immediately return from it with `error_on_exit`.
 */
 void Host_ExitInMain( void )
 {
+#if XASH_EMSCRIPTEN
+	// Host_Main has already returned to the browser, there is nothing to jump back into.
+	// Stop the frame loop, let the page know and unwind the wasm stack by exiting the runtime
+	emscripten_cancel_main_loop();
+	EM_ASM({ Module.xash?.onExit?.( $0 ); }, error_on_exit );
+	emscripten_force_exit( error_on_exit );
+#else
 	longjmp( return_from_main_buf, 1 );
+#endif
 }
 
 #ifdef XASH_ENGINE_TESTS
@@ -334,6 +342,11 @@ Host_CalcSleep
 */
 static int Host_CalcSleep( void )
 {
+#if XASH_EMSCRIPTEN
+	// browser drives the frames with requestAnimationFrame, sleeping would only busy-wait the main thread
+	return 0;
+#endif
+
 	if( Host_IsDedicated( ))
 	{
 		if( sv_hibernate_when_empty.value )
@@ -1166,6 +1179,45 @@ static void Sys_Quit_f( void )
 	Sys_Quit( Cmd_Argc() > 1 ? Cmd_Argv( 1 ) : "command" );
 }
 
+#if XASH_EMSCRIPTEN
+/*
+=================
+Host_EmscriptenFrame
+
+one iteration of the main loop, called by the browser on every animation frame
+=================
+*/
+static void Host_EmscriptenFrame( void *userdata )
+{
+	double *oldtime = userdata;
+	double newtime;
+
+	if( host.status == HOST_CRASHED )
+	{
+		emscripten_cancel_main_loop();
+		return;
+	}
+
+	newtime = Platform_DoubleTime();
+	COM_Frame( newtime - *oldtime );
+	*oldtime = newtime;
+}
+
+/*
+=================
+Host_EmscriptenCommand
+
+lets the web page queue console commands: Module.ccall( 'Host_EmscriptenCommand', null, ['string'], ['map c1a0'] )
+=================
+*/
+void EMSCRIPTEN_KEEPALIVE Host_EmscriptenCommand( const char *text );
+void EMSCRIPTEN_KEEPALIVE Host_EmscriptenCommand( const char *text )
+{
+	Cbuf_AddText( text );
+	Cbuf_AddText( "\n" );
+}
+#endif // XASH_EMSCRIPTEN
+
 /*
 =================
 Host_Main
@@ -1180,8 +1232,10 @@ int EXPORT Host_Main( int argc, char **argv, const char *progname, int bChangeGa
 	pChangeGame = NULL;
 #endif
 
+#if !XASH_EMSCRIPTEN
 	if( setjmp( return_from_main_buf ))
 		return error_on_exit;
+#endif
 
 	host.starttime = Platform_DoubleTime();
 
@@ -1335,6 +1389,12 @@ int EXPORT Host_Main( int argc, char **argv, const char *progname, int bChangeGa
 	// check after all configs were executed
 	HPAK_CheckIntegrity( hpk_custom_file.string );
 
+#if XASH_EMSCRIPTEN
+	// can't block the browser's main thread, schedule frames from requestAnimationFrame instead
+	// and return, the runtime is kept alive by the main loop
+	EM_ASM({ Module.xash?.onReady?.(); });
+	emscripten_set_main_loop_arg( Host_EmscriptenFrame, &oldtime, 0, false );
+#else
 	// main window message loop
 	while( host.status != HOST_CRASHED )
 	{
@@ -1342,6 +1402,7 @@ int EXPORT Host_Main( int argc, char **argv, const char *progname, int bChangeGa
 		COM_Frame( newtime - oldtime );
 		oldtime = newtime;
 	}
+#endif // XASH_EMSCRIPTEN
 
 	return 0;
 }

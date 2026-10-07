@@ -793,6 +793,10 @@ static void GL_InitExtensionsGLES( void )
 #elif XASH_GLES3COMPAT
 	glConfig.context = CONTEXT_TYPE_GLES_2_X;
 	glConfig.wrapper = GLES_WRAPPER_NONE;
+#elif XASH_WEBGL
+	// WebGL2 has no fixed function pipeline, let gl2_shim emulate it like on core contexts
+	glConfig.context = CONTEXT_TYPE_GL_CORE;
+	glConfig.wrapper = GLES_WRAPPER_NONE;
 #else
 	#error "unknown gles wrapper"
 #endif
